@@ -12,57 +12,54 @@ type Sphere struct {
 }
 
 func Length(vector Vector) float64 {
-	return math.Sqrt(vector.X*vector.X + vector.Y*vector.Y + vector.Y*vector.Y)
+	return math.Sqrt(vector.X*vector.X + vector.Y*vector.Y + vector.Z*vector.Z)
 }
 
-func Normalize(vector Vector, length float64) Vector{
-	var result Vector
-	result = MulScalar(vector, length/Length(vector))
-	return result
+func Normalize(vector Vector) Vector {
+	reciprocal := 1.0 / Length(vector)
+	return MulScalar(vector, reciprocal)
 }
 
 func MulVector(vector1 Vector, vector2 Vector) Vector {
-	var result Vector
-	result.X = vector1.X * vector2.X
-	result.Y = vector1.Y * vector2.Y
-	result.Z = vector1.Z * vector2.Z
-	return result
+	return Vector{
+		X: vector1.X * vector2.X,
+		Y: vector1.Y * vector2.Y,
+		Z: vector1.Z * vector2.Z,
+	}
 }
 
-func Scalar(vector1 Vector, vector2 Vector) float64 {
-	var result float64
-	result = vector1.X*vector2.X + vector1.Y*vector2.Y + vector1.Z*vector2.Z
-	return result
+func Dot(vector1 Vector, vector2 Vector) float64 {
+	return vector1.X*vector2.X + vector1.Y*vector2.Y + vector1.Z*vector2.Z
 }
 
 func MulScalar(vector Vector, number float64) Vector {
-	var result Vector
-	result.X = vector.X * number
-	result.Y = vector.Y * number
-	result.Z = vector.Z * number
-	return result
+	return Vector{
+		X: vector.X * number,
+		Y: vector.Y * number,
+		Z: vector.Z * number,
+	}
 }
 
 func AddVector(vector1 Vector, vector2 Vector) Vector {
-	var result Vector
-	result.X = vector1.X + vector2.X
-	result.Y = vector1.Y + vector2.Z
-	result.Z = vector1.Z + vector2.Z
-	return result
+	return Vector{
+		X: vector1.X + vector2.X,
+		Y: vector1.Y + vector2.Y,
+		Z: vector1.Z + vector2.Z,
+	}
 }
 
 func SubVector(vector1 Vector, vector2 Vector) Vector {
-	var result Vector
-	result.X = vector1.X - vector2.X
-	result.Y = vector1.Y - vector2.Z
-	result.Z = vector1.Z - vector2.Z
-	return result
+	return Vector{
+		X: vector1.X - vector2.X,
+		Y: vector1.Y - vector2.Y,
+		Z: vector1.Z - vector2.Z,
+	}
 }
 
 func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 float64) bool {
 	L := SubVector(sphere.Center, origin)
-	tca := Scalar(L, direction)
-	d2 := Scalar(L, L) - tca*tca
+	tca := Dot(L, direction)
+	d2 := Dot(L, L) - tca*tca
 
 	if d2 > sphere.Radius*sphere.Radius {
 		return false

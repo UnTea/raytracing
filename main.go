@@ -1,28 +1,35 @@
 package main
 
 import (
-	"github.com/UnTea/raytracing/linearmath"
 	"image"
 	"image/color"
 	"image/png"
 	"log"
 	"math"
 	"os"
+
+	"github.com/UnTea/raytracing/linearmath"
 )
 
 const width, height int = 1024, 768
-var fieldOfView float64 = math.Ceil(math.Pi/2)
-var fov int = int(fieldOfView)
+
+var fov float64 = math.Pi / 2
 
 func Render(sphere linearmath.Sphere) {
 	frameBuffer := make([]linearmath.Vector, width*height)
 
-	for j := 0; j < height; j++ {
-		for i := 0; i < width; i++ {
-			x :=  (2.0*(float64(i) + 0.5)/float64(width)  - 1.0)*math.Tan(float64(fov)/2.0)*float64(width)/float64(height)
-			y := -(2.0*(float64(j) + 0.5)/float64(height) - 1.0)*math.Tan(float64(fov)/2.0)
-			direction := linearmath.Normalize(linearmath.Vector{X: x, Y: y, Z: -1.0}, 1.0)
-			frameBuffer[i+j*width] = linearmath.CastRay(linearmath.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction, sphere)
+	aspectRatio := float64(width) / float64(height)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			normalizedX := 2.0*(float64(x)+0.5)/float64(width) - 1.0
+			normalizedY := -(2.0*(float64(y)+0.5)/float64(height) - 1.0)
+
+			filmX := normalizedX * math.Tan(fov/2.0) * aspectRatio
+			filmY := normalizedY * math.Tan(fov/2.0)
+
+			direction := linearmath.Normalize(linearmath.Vector{X: filmX, Y: filmY, Z: -1.0})
+			frameBuffer[x+y*width] = linearmath.CastRay(linearmath.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction, sphere)
 		}
 	}
 
@@ -55,7 +62,9 @@ func Render(sphere linearmath.Sphere) {
 }
 
 func main() {
-	sphere := linearmath.Sphere{Center: linearmath.Vector{X: -3.0, Y: 0.0, Z: -16.0},
-		Radius: 2}
+	sphere := linearmath.Sphere{
+		Center: linearmath.Vector{X: -3.0, Y: 0.0, Z: -16.0},
+		Radius: 2,
+	}
 	Render(sphere)
 }
