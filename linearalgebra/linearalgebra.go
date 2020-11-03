@@ -61,7 +61,7 @@ func Subtract(v1 Vector, v2 Vector) Vector {
 	}
 }
 
-func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 float64) bool {
+func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 *float64) bool {
 	L := Subtract(sphere.Center, origin)
 	tca := Dot(L, direction)
 	d2 := Dot(L, L) - tca*tca
@@ -71,27 +71,27 @@ func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 float64) bo
 	}
 
 	thc := math.Sqrt(sphere.Radius*sphere.Radius - d2)
-	t0 = tca - thc
+	*t0 = tca - thc
 	t1 := tca + thc
-	if t0 < 0 {
-		t0 = t1
+	if *t0 < 0 {
+		*t0 = t1
 		return false
 	}
 
 	return true
 }
 
-func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit Vector, N Vector, material Material) bool {
+func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit *Vector, N *Vector, material *Material) bool {
 	sphereDistance := math.MaxFloat64
 
 	for i := 0; i < len(spheres); i++ {
 		var distanceI float64
 
-		if RayIntersect(spheres[i], origin, direction, distanceI) && distanceI < sphereDistance {
+		if RayIntersect(spheres[i], origin, direction, &distanceI) && distanceI < sphereDistance {
 			sphereDistance = distanceI
-			hit = Add(origin, Scalar(direction, distanceI))
-			N = Normalize(Subtract(hit, spheres[i].Center))
-			material = spheres[i].Material
+			*hit = Add(origin, Scalar(direction, distanceI))
+			*N = Normalize(Subtract(*hit, spheres[i].Center))
+			*material = spheres[i].Material
 		}
 	}
 
@@ -102,7 +102,7 @@ func CastRay(spheres []Sphere, origin Vector, direction Vector) Vector {
 	var point, N Vector
 	var material Material
 
-	if !SceneIntersect(spheres, origin, direction, point, N, material) {
+	if !SceneIntersect(spheres, origin, direction, &point, &N, &material) {
 		return Vector{X: 0.2, Y: 0.7, Z: 0.8}
 	}
 
