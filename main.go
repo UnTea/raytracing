@@ -8,16 +8,14 @@ import (
 	"math"
 	"os"
 
-	"github.com/UnTea/raytracing/linearmath"
+	"github.com/UnTea/raytracing/linearalgebra"
 )
 
 const width, height int = 1024, 768
-
 var fov float64 = math.Pi / 2
 
-func Render(sphere linearmath.Sphere) {
-	frameBuffer := make([]linearmath.Vector, width*height)
-
+func Render(spheres []linearalgebra.Sphere) {
+	frameBuffer := make([]linearalgebra.Vector, width*height)
 	aspectRatio := float64(width) / float64(height)
 
 	for y := 0; y < height; y++ {
@@ -28,8 +26,8 @@ func Render(sphere linearmath.Sphere) {
 			filmX := normalizedX * math.Tan(fov/2.0) * aspectRatio
 			filmY := normalizedY * math.Tan(fov/2.0)
 
-			direction := linearmath.Normalize(linearmath.Vector{X: filmX, Y: filmY, Z: -1.0})
-			frameBuffer[x+y*width] = linearmath.CastRay(linearmath.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction, sphere)
+			direction := linearalgebra.Normalize(linearalgebra.Vector{X: filmX, Y: filmY, Z: -1.0})
+			frameBuffer[x+y*width] = linearalgebra.CastRay(spheres ,linearalgebra.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction)
 		}
 	}
 
@@ -62,9 +60,15 @@ func Render(sphere linearmath.Sphere) {
 }
 
 func main() {
-	sphere := linearmath.Sphere{
-		Center: linearmath.Vector{X: -3.0, Y: 0.0, Z: -16.0},
-		Radius: 2,
-	}
-	Render(sphere)
+	ivory := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.4, Y: 0.4, Z: 0.3}}
+	redRubber := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.3, Y: 0.1, Z: 0.1}}
+
+	var spheres []linearalgebra.Sphere
+
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -3.0, Y:  0.0, Z: -16.0}, Radius: 2.0, Material: ivory})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -1.0, Y: -1.5, Z: -12.0}, Radius: 2.0, Material: redRubber})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  1.5, Y: -0.5, Z: -18.0}, Radius: 3.0, Material: redRubber})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  7.0, Y:  5.0, Z: -18.0}, Radius: 4.0, Material: ivory})
+
+	Render(spheres)
 }

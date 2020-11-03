@@ -1,4 +1,4 @@
-package linearmath
+package linearalgebra
 
 import "math"
 
@@ -7,8 +7,13 @@ type Vector struct {
 }
 
 type Sphere struct {
-	Center Vector
-	Radius float64
+	Center   Vector
+	Radius   float64
+	Material Material
+}
+
+type Material struct {
+	DiffuseColor Vector
 }
 
 func Length(v Vector) float64 {
@@ -76,11 +81,30 @@ func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 float64) bo
 	return true
 }
 
-func CastRay(origin Vector, direction Vector, sphere Sphere) Vector {
+func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit Vector, N Vector, material Material) bool {
 	sphereDistance := math.MaxFloat64
-	if !RayIntersect(sphere, origin, direction, sphereDistance) {
-		return Vector{0.2, 0.7, 0.8}
+
+	for i := 0; i < len(spheres); i++ {
+		var distanceI float64
+
+		if RayIntersect(spheres[i], origin, direction, distanceI) && distanceI < sphereDistance {
+			sphereDistance = distanceI
+			hit = Add(origin, Scalar(direction, distanceI))
+			N = Normalize(Subtract(hit, spheres[i].Center))
+			material = spheres[i].Material
+		}
 	}
 
-	return Vector{0.4, 0.4, 0.3}
+	return sphereDistance < 1000
+}
+
+func CastRay(spheres []Sphere, origin Vector, direction Vector) Vector {
+	var point, N Vector
+	var material Material
+
+	if !SceneIntersect(spheres, origin, direction, point, N, material) {
+		return Vector{X: 0.2, Y: 0.7, Z: 0.8}
+	}
+
+	return material.DiffuseColor
 }
