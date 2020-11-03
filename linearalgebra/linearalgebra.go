@@ -85,11 +85,11 @@ func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit *Vect
 	sphereDistance := math.MaxFloat64
 
 	for i := 0; i < len(spheres); i++ {
-		var distanceI float64
+		var distanceToI float64
 
-		if RayIntersect(spheres[i], origin, direction, &distanceI) && distanceI < sphereDistance {
-			sphereDistance = distanceI
-			*hit = Add(origin, Scalar(direction, distanceI))
+		if RayIntersect(spheres[i], origin, direction, &distanceToI) && distanceToI < sphereDistance {
+			sphereDistance = distanceToI
+			*hit = Add(origin, Scalar(direction, distanceToI))
 			*N = Normalize(Subtract(*hit, spheres[i].Center))
 			*material = spheres[i].Material
 		}

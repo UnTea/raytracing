@@ -61,16 +61,16 @@ func Render(spheres []linearalgebra.Sphere) {
 
 func main() {
 	ivory := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.4, Y: 0.4, Z: 0.3}}
-	white := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.95, Y: 0.95, Z: 0.95}}
-	green := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.4, Y: 1.0, Z: 0.3}}
+	Emerald := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.31, Y: 0.86, Z: 0.39}}
 	redRubber := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.3, Y: 0.1, Z: 0.1}}
+	Cappuccino := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.7, Y: 0.62, Z: 0.48}}
 
 	var spheres []linearalgebra.Sphere
 
 	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -3.0, Y:  0.0, Z: -16.0}, Radius: 2.0, Material: ivory})
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -1.0, Y: -1.5, Z: -12.0}, Radius: 2.0, Material: white})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -1.0, Y: -1.5, Z: -12.0}, Radius: 2.0, Material: Cappuccino})
 	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  1.5, Y: -0.5, Z: -18.0}, Radius: 3.0, Material: redRubber})
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  7.0, Y:  5.0, Z: -18.0}, Radius: 4.0, Material: green})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  7.0, Y:  5.0, Z: -18.0}, Radius: 4.0, Material: Emerald})
 
 	Render(spheres)
 }
