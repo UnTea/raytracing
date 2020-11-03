@@ -46,7 +46,7 @@ func Render(sphere linearmath.Sphere) {
 		}
 	}
 
-	f, err := os.Create("Picture.png")
+	f, err := os.Create("raytracing.png")
 	if err != nil {
 		log.Fatal(err)
 	}
