@@ -14,7 +14,18 @@ import (
 const width, height int = 1024, 768
 var fov float64 = math.Pi / 3.15
 
-func Render(spheres []linearalgebra.Sphere) {
+func ACESFilm(v linearalgebra.Vector) linearalgebra.Vector {
+	a := 2.51
+	b := linearalgebra.Vector{X: 0.03, Y: 0.03, Z: 0.03}
+	c := 2.43
+	d := linearalgebra.Vector{X: 0.59, Y: 0.59, Z: 0.59}
+	e := linearalgebra.Vector{X: 0.14, Y: 0.14, Z: 0.14}
+	nominator := linearalgebra.Multiplication(v, linearalgebra.Add(linearalgebra.Scalar(v, a), b))
+	denominator := linearalgebra.Add(linearalgebra.Multiplication(v, linearalgebra.Add(linearalgebra.Scalar(v, c), d)), e)
+	return linearalgebra.Division(nominator, denominator)
+}
+
+func Render(spheres []linearalgebra.Sphere, lights []linearalgebra.Light) {
 	frameBuffer := make([]linearalgebra.Vector, width*height)
 	aspectRatio := float64(width) / float64(height)
 
@@ -27,7 +38,7 @@ func Render(spheres []linearalgebra.Sphere) {
 			filmY := normalizedY * math.Tan(fov/2.0)
 
 			direction := linearalgebra.Normalize(linearalgebra.Vector{X: filmX, Y: filmY, Z: -1.0})
-			frameBuffer[x+y*width] = linearalgebra.CastRay(spheres ,linearalgebra.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction)
+			frameBuffer[x+y*width] = linearalgebra.CastRay(spheres, lights, linearalgebra.Vector{X: 0.0, Y: 0.0, Z: 0.0}, direction)
 		}
 	}
 
@@ -35,10 +46,11 @@ func Render(spheres []linearalgebra.Sphere) {
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
+			filmFrameBuffer := ACESFilm(frameBuffer[x+y*width])
 			img.Set(x, y, color.NRGBA{
-				R: uint8(255 * frameBuffer[x+y*width].X),
-				G: uint8(255 * frameBuffer[x+y*width].Y),
-				B: uint8(255 * frameBuffer[x+y*width].Z),
+				R: uint8(255 * math.Max(0.0, math.Min(1.0 ,filmFrameBuffer.X))),
+				G: uint8(255 * math.Max(0.0, math.Min(1.0 ,filmFrameBuffer.Y))),
+				B: uint8(255 * math.Max(0.0, math.Min(1.0 ,filmFrameBuffer.Z))),
 				A: 255,
 			})
 		}
@@ -60,17 +72,21 @@ func Render(spheres []linearalgebra.Sphere) {
 }
 
 func main() {
-	ivory := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.4, Y: 0.4, Z: 0.3}}
-	Emerald := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.31, Y: 0.86, Z: 0.39}}
-	redRubber := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.3, Y: 0.1, Z: 0.1}}
-	Cappuccino := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.7, Y: 0.62, Z: 0.48}}
+	Orange := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 1.0, Y: 0.30980, Z: 0.0}}
+	Green := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.45673, Y: 1.0, Z: 0.38905}}
+	Purple := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.30196, Y: 0.21960, Z: 0.38030}}
+	Turquoise := linearalgebra.Material{DiffuseColor: linearalgebra.Vector{X: 0.25098, Y: 0.87843, Z: 0.81568}}
 
 	var spheres []linearalgebra.Sphere
 
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -3.0, Y:  0.0, Z: -16.0}, Radius: 2.0, Material: ivory})
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -1.0, Y: -1.5, Z: -12.0}, Radius: 2.0, Material: Cappuccino})
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  1.5, Y: -0.5, Z: -18.0}, Radius: 3.0, Material: redRubber})
-	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  7.0, Y:  5.0, Z: -18.0}, Radius: 4.0, Material: Emerald})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -3.0, Y:  0.0, Z: -16.0}, Radius: 2.0, Material: Orange})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X: -1.0, Y: -1.5, Z: -12.0}, Radius: 2.0, Material: Turquoise})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  1.5, Y: -0.5, Z: -18.0}, Radius: 3.0, Material: Purple})
+	spheres = append(spheres, linearalgebra.Sphere{Center: linearalgebra.Vector{X:  7.0, Y:  5.0, Z: -18.0}, Radius: 4.0, Material: Green})
 
-	Render(spheres)
+	var lights []linearalgebra.Light
+
+	lights = append(lights, linearalgebra.Light{Position: linearalgebra.Vector{X: -20, Y: 20, Z: 20}, Intensity: 1.5})
+
+	Render(spheres, lights)
 }

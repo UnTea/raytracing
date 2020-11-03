@@ -16,6 +16,11 @@ type Material struct {
 	DiffuseColor Vector
 }
 
+type Light struct {
+	Position Vector
+	Intensity float64
+}
+
 func Length(v Vector) float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
@@ -61,6 +66,14 @@ func Subtract(v1 Vector, v2 Vector) Vector {
 	}
 }
 
+func Division(v1 Vector, v2 Vector) Vector {
+	return Vector{
+		X: v1.X / v2.X,
+		Y: v1.Y / v2.Y,
+		Z: v1.Z / v2.Z,
+	}
+}
+
 func RayIntersect(sphere Sphere, origin Vector, direction Vector, t0 *float64) bool {
 	L := Subtract(sphere.Center, origin)
 	tca := Dot(L, direction)
@@ -98,7 +111,7 @@ func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit *Vect
 	return sphereDistance < 1000
 }
 
-func CastRay(spheres []Sphere, origin Vector, direction Vector) Vector {
+func CastRay(spheres []Sphere, lights []Light, origin Vector, direction Vector) Vector {
 	var point, N Vector
 	var material Material
 
@@ -106,5 +119,12 @@ func CastRay(spheres []Sphere, origin Vector, direction Vector) Vector {
 		return Vector{X: 0.2, Y: 0.7, Z: 0.8}
 	}
 
-	return material.DiffuseColor
+	var diffuseLightIntensity float64
+
+	for i := 0; i < len(lights); i++ {
+		lightDirection := Normalize(Subtract(lights[i].Position ,point))
+		diffuseLightIntensity += lights[i].Intensity * math.Max(0.0, Dot(lightDirection, N))
+	}
+
+	return Scalar(material.DiffuseColor, diffuseLightIntensity)
 }
