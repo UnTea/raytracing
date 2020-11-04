@@ -132,6 +132,22 @@ func CastRay(spheres []Sphere, lights []Light, origin Vector, direction Vector) 
 
 	for i := 0; i < len(lights); i++ {
 		lightDirection := Normalize(Subtract(lights[i].Position, point))
+		lightDistance := Length(Subtract(lights[i].Position, point))
+		var shadowOrigin Vector
+
+		if Dot(lightDirection, N) < 0 {
+			shadowOrigin = Subtract(point, MulOnScalar(N, 1e-3))
+		} else {
+			shadowOrigin = Add(point, MulOnScalar(N, 1e-3))
+		}
+
+		var shadowPoint, shadowN Vector
+		var tempMaterial Material
+
+		if SceneIntersect(spheres, shadowOrigin, lightDirection, &shadowPoint, &shadowN, &tempMaterial) && (Length(Subtract(shadowPoint, shadowOrigin)) < lightDistance) {
+			continue
+		}
+
 		diffuseLightIntensity += lights[i].Intensity * math.Max(0.0, Dot(lightDirection, N))
 		specularLightIntensity += math.Pow(math.Max(0.0, Dot(Reflect(lightDirection, N), direction)), material.SpecularExponent) * lights[i].Intensity
 	}
