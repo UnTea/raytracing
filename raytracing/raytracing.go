@@ -38,15 +38,25 @@ func Reflect(I Vector, N Vector) Vector {
 	return linmath.Subtract(I, linmath.MulOnScalar(linmath.MulOnScalar(N, 2.0), linmath.Dot(I, N)))
 }
 
-func CastRay(spheres []Sphere, lights []Light, origin Vector, direction Vector) Vector {
+func CastRay(spheres []Sphere, lights []Light, origin Vector, direction Vector, depth float64) Vector {
 	var point, N Vector
 	var material Material
 
-	if !SceneIntersect(spheres, origin, direction, &point, &N, &material) {
+	if depth > 10 || !SceneIntersect(spheres, origin, direction, &point, &N, &material) {
 		return Vector{X: 0.2, Y: 0.7, Z: 0.8}
 	}
 
+	reflectDirection := Reflect(direction, N)
 	var diffuseLightIntensity, specularLightIntensity float64
+	var reflectOrigin Vector
+
+	if linmath.Dot(reflectDirection, N) < 0 {
+		reflectOrigin = linmath.Subtract(point, linmath.MulOnScalar(N, 1e-3))
+	} else {
+		reflectOrigin = linmath.Add(point, linmath.MulOnScalar(N, 1e-3))
+	}
+
+	reflectColor := CastRay(spheres, lights, reflectOrigin, reflectDirection, depth + 1)
 
 	for i := 0; i < len(lights); i++ {
 		lightDirection := linmath.Normalize(linmath.Subtract(lights[i].Position, point))
@@ -72,8 +82,9 @@ func CastRay(spheres []Sphere, lights []Light, origin Vector, direction Vector) 
 
 	first := linmath.MulOnScalar(material.DiffuseColor, diffuseLightIntensity)
 	second := linmath.MulOnScalar(Vector{X: 1.0, Y: 1.0, Z: 1.0}, specularLightIntensity)
+	third := linmath.Multiplication(material.DiffuseColor, reflectColor)
 
-	return linmath.Add(first, second)
+	return linmath.Add(linmath.Add(first, second), third)
 }
 
 func SceneIntersect(spheres []Sphere, origin Vector, direction Vector, hit *Vector, N *Vector, material *Material) bool {
